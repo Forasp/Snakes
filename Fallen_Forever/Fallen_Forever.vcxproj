@@ -165,26 +165,40 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Collidable.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GameThreadUnsafeScope.cpp" />
+    <ClCompile Include="Listener.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="Messenger.cpp" />
     <ClCompile Include="Resource.cpp" />
     <ClCompile Include="Resources.cpp" />
+    <ClCompile Include="SnakeBody.cpp" />
+    <ClCompile Include="SnakeGame.cpp" />
+    <ClCompile Include="SnakeHead.cpp" />
+    <ClCompile Include="SnakeWorld.cpp" />
     <ClCompile Include="State.cpp" />
     <ClCompile Include="StateMain.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Collidable.h" />
     <ClInclude Include="Controller.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GlobalDefines.h" />
+    <ClInclude Include="GameThreadUnsafeScope.h" />
+    <ClInclude Include="SnakeBody.h" />
+    <ClInclude Include="SnakeGame.h" />
+    <ClInclude Include="SnakeHead.h" />
     <ClInclude Include="Listener.h" />
     <ClInclude Include="Message.h" />
     <ClInclude Include="Messenger.h" />
     <ClInclude Include="Resources.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SnakeWorld.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="StateMain.h" />
     <ClInclude Include="World.h" />

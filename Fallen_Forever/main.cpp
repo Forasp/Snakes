@@ -1,17 +1,21 @@
 #include "Game.h"
+#include "SnakeGame.h"
 #include "Message.h"
 #include "Messenger.h"
+#include "SFML/System/Sleep.hpp"
 
 int main()
 {
 	// Create window instance
 	sf::RenderWindow WindowInstance(sf::VideoMode(1024, 768), "Fallen Forever");
 
+	WindowInstance.setFramerateLimit(60);
+
 	// Set the window inactive so another thread can pick it up.
 	WindowInstance.setActive(false);
 
 	// Create an instance of the game here.
-	std::unique_ptr<Game> GameInstance = std::make_unique<Game>(&WindowInstance);
+	std::unique_ptr<Game> GameInstance = std::make_unique<SnakeGame>(&WindowInstance);
 
 	// Create an event holder here for our event polling.
 	sf::Event WindowEvent;
@@ -34,7 +38,7 @@ int main()
 			}
 		}
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		sf::sleep(sf::milliseconds(100));
 	}
 
 	return 0;

@@ -1,46 +1,27 @@
 #include "Game.h"
 #include "World.h"
 #include "SFML/Window/Keyboard.hpp"
+#include "SFML/System/Sleep.hpp"
 #include "Message.h"
 #include "Messenger.h"
+#include "GameObject.h"
 #include <cassert>
 #include <iostream>
+#include "Collidable.h"
 
 Game::Game(sf::RenderWindow* _RenderWindow)
 {
-	mActive = true;
-
-	mMessengers.emplace(std::make_pair("KeyEvents", std::make_shared<Messenger>()));
-	mMessengers.emplace(std::make_pair("GlobalEvents", std::make_shared<Messenger>()));
-
-	GetMessenger("KeyEvents").get()->AddListener(this);
-	GetMessenger("GlobalEvents").get()->AddListener(this);
-
-	mCurrentWorld = std::make_shared<World>(this);
-
-	mRenderWindow = _RenderWindow;
-
-	mClock.restart();
-
-	mLastPhysicsTime	= mClock.getElapsedTime();
-	mLastControllerTime = mClock.getElapsedTime();
-	mLastRenderTime		= mClock.getElapsedTime();
-	mLastMessagingTime	= mClock.getElapsedTime();
-
-
-	mPhysicsThread		= std::thread(&Game::PhysicsThread,		this);
-	mControllerThread	= std::thread(&Game::ControllerThread,	this);
-	mRenderingThread	= std::thread(&Game::RenderingThread,	this);
-	mMessagingThread	= std::thread(&Game::MessagingThread,	this);
+	InitializeGame(_RenderWindow);
 }
 
 Game::~Game()
 {
 	mActive = false;
+	mCurrentWorld.reset();
 
 	while (mPhysicsThreadActive || mRenderingThreadActive || mControllerThreadActive || mMessagingThreadActive)
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		sf::sleep(sf::milliseconds(100));
 	}
 
 	if (mPhysicsThread.joinable())
@@ -75,26 +56,53 @@ void Game::PhysicsThread()
 
 	while (mActive && mPhysicsThreadActive)
 	{
-		// Always wait for rendering to complete -TODO- Double buffer all rendering objects so we can
-		// skip this. -TODO- 
-		while (mRendering)
+		while (mBlockAllThreads)
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			sf::sleep(sf::milliseconds(1));
 		}
+
+		mPhysicTicking = true;
 
 		sf::Time CurrentTime = mClock.getElapsedTime();
 		sf::Time Elapsedtime = CurrentTime - mLastPhysicsTime;
 		mLastPhysicsTime = CurrentTime;
 
 		// Tick Physics
-		mCurrentWorld.get()->Tick(Elapsedtime);
+		if (mCurrentWorld != nullptr)
+		{
+			mCurrentWorld.get()->Tick(Elapsedtime);
+		}
 
-		mRendering = true;
+		// -TODO- Move collision detection to its own thread.
+		// -TODO- Clean up implementation.
+		for (unsigned int i = 0; i < mObjectsToRender.size(); i++)
+		{
+			for (unsigned int j = 0; j < mObjectsToRender[i].size(); j++)
+			{
+				Collidable* CollidableObject1;
+				if ((CollidableObject1 = dynamic_cast<Collidable*>(mObjectsToRender[i][j])) != nullptr)
+				{
+					for (unsigned int k = i; k < mObjectsToRender.size(); k++)
+					{
+						for (unsigned int l = (k == i) ? j + 1 : 0; l < mObjectsToRender[k].size(); l++)
+						{
+							Collidable* CollidableObject2;
+							if ((CollidableObject2 = dynamic_cast<Collidable*>(mObjectsToRender[k][l])) != nullptr)
+							{
+								CollidableObject1->CheckCollision(CollidableObject2);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		mPhysicTicking = false;
 
 		// Tick no faster than once every 10ms
 		if (Elapsedtime.asMilliseconds() < 10)
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(Elapsedtime.asMilliseconds() - 10));
+			sf::sleep(sf::milliseconds(10 - Elapsedtime.asMilliseconds()));
 		}
 	}
 
@@ -111,6 +119,13 @@ void Game::ControllerThread()
 
 	while (mActive && mControllerThreadActive)
 	{
+		while (mBlockAllThreads)
+		{
+			sf::sleep(sf::milliseconds(1));
+		}
+
+		mControllerTicking = true;
+
 		CheckControls();
 
 		sf::Time CurrentTime = mClock.getElapsedTime();
@@ -120,10 +135,12 @@ void Game::ControllerThread()
 		// Tick the controller
 		mCurrentWorld.get()->ControllerTick(Elapsedtime);
 
+		mControllerTicking = false;
+
 		// Tick no faster than once every 50ms
 		if (Elapsedtime.asMilliseconds() < 50)
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(Elapsedtime.asMilliseconds() - 50));
+			sf::sleep(sf::milliseconds(50 - Elapsedtime.asMilliseconds()));
 		}
 	}
 
@@ -144,10 +161,12 @@ void Game::RenderingThread()
 	while (mActive && mRenderingThreadActive)
 	{
 		// Always wait for physics to complete at least one pass
-		while (!mRendering)
+		while (mBlockAllThreads)
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			sf::sleep(sf::milliseconds(1));
 		}
+
+		mRendering = true;
 
 		sf::Time CurrentTime = mClock.getElapsedTime();
 		sf::Time Elapsedtime = CurrentTime - mLastRenderTime;
@@ -156,18 +175,24 @@ void Game::RenderingThread()
 		// Clear screen with black
 		mRenderWindow->clear(sf::Color(0,0,0,255));
 
-		// Tick Rendering through world's scene graph
-		mCurrentWorld.get()->RenderTick();
+		// Tick Rendering of all objects needing rendering
+		for (std::vector<GameObject*> goVector : mObjectsToRender)
+		{
+			for (GameObject* go : goVector)
+			{
+				go->RenderTick(mRenderWindow);
+			}
+		}
 
 		// Throw the buffer to display!
 		mRenderWindow->display();
 
 		mRendering = false;
 
-		// Tick no faster than once every 4ms
-		if (Elapsedtime.asMilliseconds() < 4)
+		// Tick no faster than once every 10ms
+		if (Elapsedtime.asMilliseconds() < 10)
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(Elapsedtime.asMilliseconds() - 4));
+			sf::sleep(sf::milliseconds(10 - Elapsedtime.asMilliseconds()));
 		}
 	}
 
@@ -184,6 +209,13 @@ void Game::MessagingThread()
 
 	while (mActive && mMessagingThreadActive)
 	{
+		while (mBlockAllThreads)
+		{
+			sf::sleep(sf::milliseconds(1));
+		}
+
+		mMessengerTicking = true;
+
 		sf::Time CurrentTime = mClock.getElapsedTime();
 		sf::Time Elapsedtime = CurrentTime - mLastMessagingTime;
 		mLastMessagingTime = CurrentTime;
@@ -202,10 +234,12 @@ void Game::MessagingThread()
 			it.second.get()->TickMessenger();
 		}
 
-		// Tick no faster than once every 4ms
+		mMessengerTicking = false;
+
+		// Tick no faster than once every 50ms
 		if (Elapsedtime.asMilliseconds() < 50)
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(Elapsedtime.asMilliseconds() - 50));
+			sf::sleep(sf::milliseconds(50 - Elapsedtime.asMilliseconds()));
 		}
 	}
 
@@ -227,7 +261,12 @@ void Game::ReadMessage(Message* _Message)
 			CheckControls(_Message->GetMessageDouble());
 			break;
 		case MESSAGE_TYPE_DOUBLE:
+			if (_Message->GetMessageDouble() == RESTART_LEVEL)
+			{
+				std::shared_ptr<World> WorldCopy = mCurrentWorld;
 
+				mCurrentWorld = GetNewWorld();
+			}
 			break;
 		case MESSAGE_TYPE_STRING:
 
@@ -257,12 +296,81 @@ void Game::CheckControls(int _OverrideControl)
 std::shared_ptr<Messenger> Game::GetMessenger(std::string _MessengerName)
 {
 	std::map<std::string, std::shared_ptr<Messenger>>::iterator Result = mMessengers.find(_MessengerName);
-	assert(Result != mMessengers.end());
-	return mMessengers.find(_MessengerName)->second;
-}
 
+	if (Result == mMessengers.end())
+	{
+		mMessengers.emplace(std::make_pair(_MessengerName, std::make_shared<Messenger>()));
+		Result = mMessengers.find(_MessengerName);
+	}
+
+	return Result->second;
+}
 
 void Game::QueueMessage(std::string _MessengerName, std::unique_ptr<Message> _Message)
 {
 	mMessageQueue.push(std::make_pair(_MessengerName, std::move(_Message)));
+}
+
+void Game::AddObjectToRenderer(GameObject* _GameObject, int _Layer)
+{
+	assert(_Layer < NUMBER_OF_LAYERS);
+
+	mObjectsToRender[_Layer].push_back(_GameObject);
+}
+
+void Game::RemoveObjectFromRenderer(GameObject* _GameObject, int _Layer)
+{
+	assert(_Layer < NUMBER_OF_LAYERS);
+
+	for (unsigned int i = 0; i < mObjectsToRender[_Layer].size(); i++)
+	{
+		if (_GameObject == mObjectsToRender[_Layer][i])
+		{
+			mObjectsToRender[_Layer].erase(mObjectsToRender[_Layer].begin()+i);
+			return;
+		}
+	}
+}
+
+std::shared_ptr<World> Game::GetNewWorld()
+{
+	return std::make_shared<World>(this);
+}
+
+void Game::InitializeGame(sf::RenderWindow* _RenderWindow)
+{
+	mActive = true;
+	mBlockAllThreads = false;
+	mRenderWindow = _RenderWindow;
+	mObjectsToRender.resize(NUMBER_OF_LAYERS);
+
+	mCurrentWorld = GetNewWorld();
+
+	mClock.restart();
+
+	mLastPhysicsTime = mClock.getElapsedTime();
+	mLastControllerTime = mClock.getElapsedTime();
+	mLastRenderTime = mClock.getElapsedTime();
+	mLastMessagingTime = mClock.getElapsedTime();
+
+	mPhysicsThread = std::thread(&Game::PhysicsThread, this);
+	mControllerThread = std::thread(&Game::ControllerThread, this);
+	mRenderingThread = std::thread(&Game::RenderingThread, this);
+	mMessagingThread = std::thread(&Game::MessagingThread, this);
+}
+
+
+void Game::LockAllThreads()
+{
+	mBlockAllThreads = true;
+
+	while (mRendering && mPhysicTicking && mControllerTicking && mMessengerTicking)
+	{
+		std::this_thread::yield();
+	}
+}
+
+void Game::UnlockAllThreads()
+{
+	mBlockAllThreads = false;
 }
