@@ -1,9 +1,34 @@
-﻿  Game.cpp
-Game.cpp(227): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-     Creating library C:\Users\timth\Source\Repos\Fallen_Forever\Release\Fallen_Forever.lib and object C:\Users\timth\Source\Repos\Fallen_Forever\Release\Fallen_Forever.exp
+﻿  Collidable.cpp
+  Game.cpp
+Game.cpp(255): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  GameObject.cpp
+GameObject.cpp(71): warning C4018: '<': signed/unsigned mismatch
+  GameThreadUnsafeScope.cpp
+  Listener.cpp
+  main.cpp
+  Messenger.cpp
+  MessengerSystem.cpp
+  Resource.cpp
+  Resources.cpp
+  SnakeBody.cpp
+SnakeBody.cpp(37): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+SnakeBody.cpp(40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+SnakeBody.cpp(71): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  SnakeGame.cpp
+  SnakeHead.cpp
+SnakeHead.cpp(14): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+SnakeHead.cpp(19): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+SnakeHead.cpp(36): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  SnakeWorld.cpp
+SnakeWorld.cpp(70): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  State.cpp
+  StateMain.cpp
+  World.cpp
+World.cpp(70): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+     Creating library C:\Users\Tim Powell\source\repos\Snakes\Release\Fallen_Forever.lib and object C:\Users\Tim Powell\source\repos\Snakes\Release\Fallen_Forever.exp
   Generating code
-  37 of 827 functions ( 4.5%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
+  1172 of 1176 functions (99.7%) were compiled, the rest were copied from previous compilation.
+    614 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-  Fallen_Forever.vcxproj -> C:\Users\timth\Source\Repos\Fallen_Forever\Release\Fallen_Forever.exe
+  Fallen_Forever.vcxproj -> C:\Users\Tim Powell\source\repos\Snakes\Release\Fallen_Forever.exe

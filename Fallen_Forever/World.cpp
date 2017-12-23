@@ -4,7 +4,6 @@
 #include "Controller.h"
 #include "Messenger.h"
 #include "Message.h"
-#include "SnakeHead.h"
 
 World::World(Game* _Game)
 {
@@ -12,6 +11,8 @@ World::World(Game* _Game)
 
 	AttachToMessenger(mGame->GetMessenger("KeyEvents"));
 	AttachToMessenger(mGame->GetMessenger("GameEvents"));
+	mWorldRoot = std::make_shared<GameObject>();
+	Initialize();
 }
 
 World::~World()
@@ -60,5 +61,21 @@ void World::CheckControls(int _OverrideControl)
 /// </summary>
 void World::ReadMessage(Message* _Message)
 {
-	 
+	switch (_Message->GetMessageType())
+	{
+	case MESSAGE_TYPE_INVALID:
+		return;
+		break;
+	case MESSAGE_TYPE_INPUT:
+		CheckControls(_Message->GetMessageDouble());
+		break;
+	case MESSAGE_TYPE_DOUBLE:
+		break;
+	case MESSAGE_TYPE_STRING:
+
+		break;
+	default:
+
+		break;
+	}
 }

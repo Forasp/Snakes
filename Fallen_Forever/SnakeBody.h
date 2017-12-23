@@ -10,13 +10,17 @@ class Game;
 class SnakeBody : public GameObject, public Collidable
 {
 public:
-	SnakeBody(GameObject* _SnakeHead, Game* _Game);
+	SnakeBody(Game* _Game, GameObject* _Parent = nullptr) : GameObject(_Game, _Parent) { InitializeGameObject(); }
 	~SnakeBody();
 	void AddBody();
 	bool AddTurn(bool Left);
 	void Tick(sf::Time _DeltaTime);
 	void RenderTick(sf::RenderWindow* _RenderWindow);
 	void Collide(Collidable* _Collidable);
+	void HandleMessage(Message* _Message) {};
+	void InitializeGameObject();
+	void ReadMessage(Message* _Message) { GameObject::ReadMessage(_Message); Collidable::ReadMessage(_Message); }
+	virtual void CollisionBroadcast();
 
 protected:
 	void ExecuteTurn();

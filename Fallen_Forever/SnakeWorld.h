@@ -28,8 +28,6 @@ protected:
 
 	void CheckControls(int _OverrideControl = -1);
 
-	Game* mGame;
-
 	std::shared_ptr<GameObject> mWorldRoot;
 
 	std::shared_ptr<ResourceHolder> mResourceHolder;

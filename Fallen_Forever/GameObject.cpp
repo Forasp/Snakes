@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "Message.h"
 #include "GameThreadUnsafeScope.h"
+#include "Controller.h"
 
 GameObject::~GameObject()
 {
@@ -17,6 +18,10 @@ void GameObject::RenderTick(sf::RenderWindow* _RenderWindow)
 {
 	if (!mAddedToRenderer)
 	{
+		if (!mSprite.getTexture())
+		{
+			return;
+		}
 		mGame->AddObjectToRenderer(this, mLayer);
 		mAddedToRenderer = true;
 	}
@@ -40,4 +45,45 @@ void GameObject::Tick(sf::Time _DeltaTime)
 	{
 		it->Tick(_DeltaTime);
 	}
+}
+
+void GameObject::ReadMessage(Message* _Message)
+{
+	HandleMessage(_Message);
+	if (mController != nullptr)
+	{
+		mController->ReadMessage(_Message);
+	}
+}
+
+
+void GameObject::ControllerTick(sf::Time _DeltaTime)
+{
+	if (mController != nullptr)
+	{
+		mController->ControllerTick();
+	}
+}
+
+void GameObject::RemoveChild(GameObject* _GameObject)
+{
+	for (int i = 0; i < mChildren.size(); i++)
+	{
+		if (mChildren[i].get() == _GameObject)
+		{
+			GameThreadUnsafeScope ScopeLock(mGame);
+			mChildren.erase(mChildren.begin() + i);
+			return;
+		}
+	}
+
+	if (mParent != nullptr)
+	{
+		mParent->RemoveChild(_GameObject);
+	}
+}
+
+void GameObject::AddChild(std::shared_ptr<GameObject> _GameObject)
+{
+	mChildren.push_back(_GameObject);
 }

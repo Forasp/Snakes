@@ -6,11 +6,11 @@
 #include "Message.h"
 #include "GameThreadUnsafeScope.h"
 
-SnakeBody::SnakeBody(GameObject* _SnakeHead, Game* _Game)
+void SnakeBody::InitializeGameObject()
 {
-	mSnakeHead = _SnakeHead;
-	mGame = _Game;
+	mSnakeHead = mParent;
 	mSnakeBodyTail = NULL;
+	mRotation = 45;
 	mSnakeBodyRadius = 20;
 	mLayer = LAYER_GAME_BACKGROUND;
 	mTurning = false;
@@ -20,28 +20,67 @@ SnakeBody::SnakeBody(GameObject* _SnakeHead, Game* _Game)
 
 	if (mVelocity.first > 1)
 	{
-		mPosition.first -= mSnakeBodyRadius*2;
+		mPosition.first -= mSnakeBodyRadius * 2;
 	}
 	else if (mVelocity.first < -1)
 	{
-		mPosition.first += mSnakeBodyRadius*2;
+		mPosition.first += mSnakeBodyRadius * 2;
 	}
 	else if (mVelocity.second > 1)
 	{
-		mPosition.second -= mSnakeBodyRadius*2;
+		mPosition.second -= mSnakeBodyRadius * 2;
 	}
 	else if (mVelocity.second < -1)
 	{
-		mPosition.second += mSnakeBodyRadius*2;
+		mPosition.second += mSnakeBodyRadius * 2;
 	}
 
 	mSnakeBodyRect = sf::CircleShape(mSnakeBodyRadius, 4);
+	mSize = std::make_pair(mSnakeBodyRadius * 2, mSnakeBodyRadius * 2);
 	mSnakeBodyRadius = mSnakeBodyRadius * 0.9;
-	CreateCollider(&mPosition.first, &mPosition.second, &mSnakeBodyRadius);
+ 	CreateCollider(&mPosition, &mSize, &mRotation);
 	mSnakeBodyRect.setPosition(mPosition.first, mPosition.second);
 	mGame->AddObjectToRenderer(this, mLayer);
 	mAddedToRenderer = true;
-};
+
+	// TODO - Need to replace all the shape nonsense with images and scrap the following
+
+	for (int i = 0; i < 32; i++)
+	{
+		for (int j = 0; j < 32; j++)
+		{
+			mCollisionAreaXS[i][j] = true;
+		}
+	}
+	for (int i = 0; i < 16; i++)
+	{
+		for (int j = 0; j < 16; j++)
+		{
+			mCollisionAreaS[i][j] = true;
+		}
+	}
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			mCollisionAreaM[i][j] = true;
+		}
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			mCollisionAreaL[i][j] = true;
+		}
+	}
+	for (int i = 0; i < 2; i++)
+	{
+		for (int j = 0; j < 2; j++)
+		{
+			mCollisionAreaXL[i][j] = true;
+		}
+	}
+}
 
 SnakeBody::~SnakeBody()
 {
@@ -61,7 +100,7 @@ void SnakeBody::AddBody()
 	}
 	else
 	{
-		mSnakeBodyTail = std::make_shared<SnakeBody>(this, mGame);
+		mSnakeBodyTail = std::make_shared<SnakeBody>(mGame, this);
 
 		mChildren.push_back(mSnakeBodyTail);
 	}
@@ -69,7 +108,7 @@ void SnakeBody::AddBody()
 
 void SnakeBody::RenderTick(sf::RenderWindow* _RenderWindow)
 {
-	mSnakeBodyRect.setPosition(mPosition.first, mPosition.second);
+	mSnakeBodyRect.setPosition(mPosition.first , mPosition.second );
 	_RenderWindow->draw(mSnakeBodyRect);
 
 	//if (mSnakeBodyTail != nullptr)
@@ -178,4 +217,9 @@ void SnakeBody::ExecuteTurn()
 void SnakeBody::Collide(Collidable* _Collidable)
 {
 
+}
+
+void SnakeBody::CollisionBroadcast()
+{
+	mGame->QueueMessage("Collision", std::make_unique<Message>(Message(MESSAGE_TYPE_COLLISION_PTR, dynamic_cast<GameObject*>(this))));
 }

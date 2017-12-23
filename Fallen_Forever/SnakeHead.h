@@ -12,12 +12,16 @@ class SnakeBody;
 class SnakeHead : public GameObject, public Collidable
 {
 public:
-	SnakeHead(Game* _Game);
+	SnakeHead(Game* _Game, GameObject* _Parent = nullptr) : GameObject(_Game, _Parent) { InitializeGameObject(); }
 	~SnakeHead();
 	void RenderTick(sf::RenderWindow* _RenderWindow);
-	void ReadMessage(Message* _Message);
 	void Tick(sf::Time _DeltaTime);
 	void Collide(Collidable* _Collidable);
+	void HandleMessage(Message* _Message);
+	void ReadMessage(Message* _Message) { GameObject::ReadMessage(_Message); Collidable::ReadMessage(_Message); }
+	void InitializeGameObject();
+	virtual void CollisionBroadcast();
+
 protected:
 
 	void AddBody(void);
@@ -29,6 +33,5 @@ protected:
 
 	std::shared_ptr<SnakeBody> mSnakeBody;
 	sf::CircleShape mSnakeHeadRect;
-	Game* mGame;
 	double mSnakeHeadRadius;
 };

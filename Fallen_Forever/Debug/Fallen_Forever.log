@@ -1,2 +1,3 @@
-﻿  World.cpp
-  Fallen_Forever.vcxproj -> C:\Users\timth\source\repos\Snakes\Debug\Fallen_Forever.exe
+﻿  SnakeWorld.cpp
+c:\users\tim powell\source\repos\snakes\fallen_forever\snakeworld.cpp(67): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  Fallen_Forever.vcxproj -> C:\Users\Tim Powell\source\repos\Snakes\Debug\Fallen_Forever.exe

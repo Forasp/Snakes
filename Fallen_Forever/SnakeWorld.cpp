@@ -9,9 +9,6 @@
 
 void SnakeWorld::Initialize()
 {
-	AttachToMessenger(mGame->GetMessenger("KeyEvents"));
-	AttachToMessenger(mGame->GetMessenger("GameEvents"));
-
 	// Construct our world here.
 	mWorldRoot = std::make_shared<SnakeHead>(mGame);
 }
@@ -72,7 +69,7 @@ void SnakeWorld::ReadMessage(Message* _Message)
 	case MESSAGE_TYPE_DOUBLE:
 		if (_Message->GetMessageDouble() == COLLISION_WITH_SELF)
 		{
-			mGame->QueueMessage("GlobalEvents", std::make_unique<Message>(MESSAGE_TYPE_DOUBLE, RESTART_LEVEL));
+			mGame->QueueMessage("GlobalEvents", std::make_unique<Message>(MESSAGE_TYPE_DOUBLE, (double)RESTART_LEVEL));
 		}
 		break;
 	case MESSAGE_TYPE_STRING:

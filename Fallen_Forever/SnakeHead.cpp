@@ -6,20 +6,59 @@
 #include "GlobalDefines.h"
 #include "GameThreadUnsafeScope.h"
 
-SnakeHead::SnakeHead(Game* _Game)
+void SnakeHead::InitializeGameObject()
 {
-	mGame = _Game;
 	mSnakeHeadRadius = 20;
+	mRotation = 45;
 	mLayer = LAYER_GAME_BACKGROUND;
-	AttachToMessenger(mGame->GetMessenger("KeyEvents"));
+	Listener::AttachToMessenger(mGame->GetMessenger("KeyEvents"));
 	mSnakeHeadRect = sf::CircleShape(mSnakeHeadRadius, 4);
-	CreateCollider(&mPosition.first, &mPosition.second, &mSnakeHeadRadius);
+	mSize = std::make_pair(mSnakeHeadRadius * 2, mSnakeHeadRadius * 2);
+	CreateCollider(&mPosition, &mSize, &mRotation);
 	//mSnakeHeadRect.setRotation(45);
 	mPosition.first = 100;
 	mPosition.second = 100;
 	mSnakeHeadRect.setPosition(mPosition.first, mPosition.second);
 	mGame->AddObjectToRenderer(this, mLayer);
 	mAddedToRenderer = true;
+
+	// TODO - Need to replace all the shape nonsense with images and scrap the following
+
+	for (int i = 0; i < 32; i++)
+	{
+		for (int j = 0; j < 32; j++)
+		{
+			mCollisionAreaXS[i][j] = true;
+		}
+	}
+	for (int i = 0; i < 16; i++)
+	{
+		for (int j = 0; j < 16; j++)
+		{
+			mCollisionAreaS[i][j] = true;
+		}
+	}
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			mCollisionAreaM[i][j] = true;
+		}
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			mCollisionAreaL[i][j] = true;
+		}
+	}
+	for (int i = 0; i < 2; i++)
+	{
+		for (int j = 0; j < 2; j++)
+		{
+			mCollisionAreaXL[i][j] = true;
+		}
+	}
 }
 
 SnakeHead::~SnakeHead()
@@ -43,7 +82,7 @@ void SnakeHead::RenderTick(sf::RenderWindow* _RenderWindow)
 	//}
 }
 
-void SnakeHead::ReadMessage(Message* _Message)
+void SnakeHead::HandleMessage(Message* _Message)
 {
 	if (_Message->GetMessageType() == MESSAGE_TYPE_INPUT)
 	{
@@ -78,7 +117,7 @@ void SnakeHead::AddBody()
 	}
 	else
 	{
-		mSnakeBody = std::make_shared<SnakeBody>(this, mGame);
+		mSnakeBody = std::make_shared<SnakeBody>(mGame, this);
 		mChildren.push_back(mSnakeBody);
 	}
 
@@ -170,6 +209,11 @@ void SnakeHead::Collide(Collidable* _Collidable)
 	// If we hit a snake body
 	if (dynamic_cast<SnakeBody*>(_Collidable) != nullptr)
 	{
-		mGame->QueueMessage("GameEvents", std::make_unique<Message>(MESSAGE_TYPE_DOUBLE, COLLISION_WITH_SELF));
+		mGame->QueueMessage("GameEvents", std::make_unique<Message>(MESSAGE_TYPE_DOUBLE, (double)COLLISION_WITH_SELF));
 	}
+}
+
+void SnakeHead::CollisionBroadcast()
+{
+	mGame->QueueMessage("Collision", std::make_unique<Message>(Message(MESSAGE_TYPE_COLLISION_PTR, dynamic_cast<GameObject*>(this))));
 }
