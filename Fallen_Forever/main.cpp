@@ -35,6 +35,15 @@ int main()
 				case sf::Event::Resized:
 					WindowInstance.setSize(sf::Vector2u(WindowEvent.size.width, WindowEvent.size.height));
 					break;
+				case sf::Event::MouseButtonPressed:
+					if (WindowEvent.mouseButton.button == sf::Mouse::Left)
+					{
+						GameInstance->QueueMessage("MouseEvents",
+							std::make_unique<Message>(MESSAGE_TYPE_MOUSE,
+								std::pair<double, double>(WindowEvent.mouseButton.x, WindowEvent.mouseButton.y),
+								std::string("LeftPressed")));
+					}
+					break;
 			}
 		}
 

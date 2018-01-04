@@ -1,2 +1,5 @@
-﻿  Listener.cpp
+﻿  SnakeHead.cpp
+c:\users\tim powell\source\repos\snakes\fallen_forever\snakehead.cpp(17): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\tim powell\source\repos\snakes\fallen_forever\snakehead.cpp(23): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\tim powell\source\repos\snakes\fallen_forever\snakehead.cpp(83): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   Fallen_Forever.vcxproj -> C:\Users\Tim Powell\source\repos\Snakes\Debug\Fallen_Forever.exe

@@ -13,6 +13,7 @@ void SnakeHead::InitializeGameObject()
 	mRotation = 45;
 	mLayer = LAYER_GAME_BACKGROUND;
 	Listener::AttachToMessenger(mGame->GetMessenger("KeyEvents").get());
+	Listener::AttachToMessenger(mGame->GetMessenger("MouseEvents").get());
 	mSnakeHeadRect = sf::CircleShape(mSnakeHeadRadius, 4);
 	mSize = std::make_pair(mSnakeHeadRadius * 2, mSnakeHeadRadius * 2);
 	CreateCollider(&mPosition, &mSize, &mRotation);
@@ -111,6 +112,42 @@ void SnakeHead::HandleMessage(Message* _Message)
 		else if (_Message->GetMessageDouble() == sf::Keyboard::Space)
 		{
 			AddBody();
+		}
+	}
+	// If message is a mouse event
+	if (_Message->GetMessageType() == MESSAGE_TYPE_MOUSE && _Message->GetMessageString().compare("LeftPressed") == 0)
+	{
+		std::pair<double, double>* ObjectPosition = &GetPosition();
+		std::pair<double, double>* MousePosition = &_Message->GetMessageDoublePair();
+		std::pair<double, double> NormalizedUnitVector;
+
+		// Normalize difference
+		double TotalDistance = abs(ObjectPosition->first - MousePosition->first) + abs(ObjectPosition->second - MousePosition->second);
+		NormalizedUnitVector.first = (ObjectPosition->first - MousePosition->first) / TotalDistance;
+		NormalizedUnitVector.second = (ObjectPosition->second - MousePosition->second) / TotalDistance;
+
+		double Rotation = atan2(NormalizedUnitVector.second, NormalizedUnitVector.first) * 180.0 / 3.141592;
+
+		while (Rotation < 0.0)
+		{
+			Rotation += 360.0;
+		}
+
+		if (Rotation > 315 || Rotation <= 45)
+		{
+			TurnLeft();
+		}
+		else if (Rotation <= 135)
+		{
+			TurnUp();
+		}
+		else if (Rotation <= 225)
+		{
+			TurnRight();
+		}
+		else
+		{
+			TurnDown();
 		}
 	}
 }
