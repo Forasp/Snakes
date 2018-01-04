@@ -90,6 +90,9 @@
     <ClCompile Include="MessengerSystem.cpp">
       <Filter>Source Files\Messenger</Filter>
     </ClCompile>
+    <ClCompile Include="SnakeBitObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StateMain.h">
@@ -148,6 +151,9 @@
     </ClInclude>
     <ClInclude Include="MessengerSystem.h">
       <Filter>Header Files\Messenger</Filter>
+    </ClInclude>
+    <ClInclude Include="SnakeBitObject.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

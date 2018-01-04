@@ -6,7 +6,18 @@
 /// </summary>
 void Messenger::AddListener(Listener* _Listener)
 {
+	for (Listener* i : mListeners)
+	{
+		if (i == _Listener)
+		{
+			return;
+		}
+	}
+
+	mListenersMutex.lock();
 	mListeners.push_back(_Listener);
+	mListenersMutex.unlock();
+	_Listener->AttachToMessenger(this);
 }
 
 /// <summary> 
@@ -14,22 +25,21 @@ void Messenger::AddListener(Listener* _Listener)
 /// </summary>
 void Messenger::RemoveListener(Listener* _Listener)
 {
-	unsigned int ListenerIndex = 0;
-	bool ListenerFound = false;
-
-	for (unsigned int i = 0; i < mListeners.size(); i++)
+	if (mListeners.size() == 0u)
 	{
-		if (mListeners[i] == _Listener)
-		{
-			ListenerIndex = i;
-			ListenerFound = true;
-			break;
-		}
+		return;
 	}
 
-	if (ListenerFound)
+	for (std::vector<Listener*>::iterator it = mListeners.begin(); it != mListeners.end(); ++it)
 	{
-		mListeners.erase(mListeners.begin() + ListenerIndex);
+		if (*it == _Listener)
+		{
+			mListenersMutex.lock();
+			mListeners.erase(it);
+			mListenersMutex.unlock();
+			_Listener->RemoveFromMessenger(this);
+			return;
+		}
 	}
 }
 
@@ -40,7 +50,7 @@ void Messenger::QueueMessage(std::shared_ptr<Message> _Message)
 {
 	// lock the queue when pushing or popping.
 	mWritingMessageLock.lock();
-	mMessageQueue.push(std::move(_Message));
+	mIncomingMessageQueue.push(std::move(_Message));
 	mWritingMessageLock.unlock();
 }
 
@@ -48,14 +58,23 @@ void Messenger::TickMessenger()
 {
 	while (mMessageQueue.size() > 0)
 	{
-		for (Listener* i : mListeners)
+		Message* MessageFront = mMessageQueue.front().get();
+		for (int i = 0; i < mListeners.size(); i++)
 		{
-			i->ReadMessage(mMessageQueue.front().get());
+			if (mListeners[i] != nullptr)
+			{
+				mListeners[i]->ReadMessage(MessageFront);
+			}
 		}
 		
+		mMessageQueue.pop();
+	}
+	while (mIncomingMessageQueue.size() > 0)
+	{
 		// lock the queue when pushing or popping.
 		mWritingMessageLock.lock();
-		mMessageQueue.pop();
+		mMessageQueue.push(mIncomingMessageQueue.front());
+		mIncomingMessageQueue.pop();
 		mWritingMessageLock.unlock();
 	}
 }

@@ -5,13 +5,14 @@
 #include "SnakeBody.h"
 #include "GlobalDefines.h"
 #include "GameThreadUnsafeScope.h"
+#include "SnakeBitObject.h"
 
 void SnakeHead::InitializeGameObject()
 {
 	mSnakeHeadRadius = 20;
 	mRotation = 45;
 	mLayer = LAYER_GAME_BACKGROUND;
-	Listener::AttachToMessenger(mGame->GetMessenger("KeyEvents"));
+	Listener::AttachToMessenger(mGame->GetMessenger("KeyEvents").get());
 	mSnakeHeadRect = sf::CircleShape(mSnakeHeadRadius, 4);
 	mSize = std::make_pair(mSnakeHeadRadius * 2, mSnakeHeadRadius * 2);
 	CreateCollider(&mPosition, &mSize, &mRotation);
@@ -73,6 +74,11 @@ SnakeHead::~SnakeHead()
 
 void SnakeHead::RenderTick(sf::RenderWindow* _RenderWindow)
 {
+	if (!_RenderWindow)
+	{
+		return;
+	}
+
 	mSnakeHeadRect.setPosition(mPosition.first, mPosition.second);
 	_RenderWindow->draw(mSnakeHeadRect);
 
@@ -201,6 +207,14 @@ void SnakeHead::TurnRight()
 
 void SnakeHead::Tick(sf::Time _DeltaTime)
 {
+	if (mPosition.first < 0 + mSize.first / 2 ||
+		mPosition.first > 1024 - mSize.first / 2 ||
+		mPosition.second < 0 + mSize.second / 2 ||
+		mPosition.second > 768 - mSize.second / 2)
+	{
+		mGame->QueueMessage("GameEvents", std::make_unique<Message>(MESSAGE_TYPE_DOUBLE, (double)COLLISION_WITH_SELF));
+	}
+
 	GameObject::Tick(_DeltaTime);
 }
 
@@ -210,6 +224,12 @@ void SnakeHead::Collide(Collidable* _Collidable)
 	if (dynamic_cast<SnakeBody*>(_Collidable) != nullptr)
 	{
 		mGame->QueueMessage("GameEvents", std::make_unique<Message>(MESSAGE_TYPE_DOUBLE, (double)COLLISION_WITH_SELF));
+	}
+	// If we hit a snake bit
+	if (dynamic_cast<SnakeBitObject*>(_Collidable) != nullptr)
+	{
+		mGame->QueueMessage("GameEvents", std::make_unique<Message>(MESSAGE_TYPE_DOUBLE, (double)COLLISION_WITH_BIT));
+		AddBody();
 	}
 }
 

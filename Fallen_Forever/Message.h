@@ -14,6 +14,7 @@
 #define COLLISION_WITH_SELF 1
 #define RESTART_LEVEL 2
 #define TICK_EVENT 3
+#define COLLISION_WITH_BIT 4
 
 class Message
 {

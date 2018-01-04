@@ -14,8 +14,8 @@ Game::Game(sf::RenderWindow* _RenderWindow)
 {
 	InitializeGame(_RenderWindow);
 
-	AttachToMessenger(GetMessenger("KeyEvents"));
-	AttachToMessenger(GetMessenger("GlobalEvents"));
+	AttachToMessenger(GetMessenger("KeyEvents").get());
+	AttachToMessenger(GetMessenger("GlobalEvents").get());
 }
 
 Game::~Game()
@@ -282,7 +282,7 @@ void Game::AddObjectToRenderer(GameObject* _GameObject, int _Layer)
 
 	if (dynamic_cast<Collidable*>(_GameObject) != nullptr)
 	{
-		_GameObject->AttachToMessenger(GetMessenger("Collision"));
+		_GameObject->AttachToMessenger(GetMessenger("Collision").get());
 	}
 
 	mObjectsToRender[_Layer].push_back(_GameObject);

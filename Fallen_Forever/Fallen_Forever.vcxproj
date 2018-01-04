@@ -175,6 +175,7 @@
     <ClCompile Include="MessengerSystem.cpp" />
     <ClCompile Include="Resource.cpp" />
     <ClCompile Include="Resources.cpp" />
+    <ClCompile Include="SnakeBitObject.cpp" />
     <ClCompile Include="SnakeBody.cpp" />
     <ClCompile Include="SnakeGame.cpp" />
     <ClCompile Include="SnakeHead.cpp" />
@@ -191,6 +192,7 @@
     <ClInclude Include="GlobalDefines.h" />
     <ClInclude Include="GameThreadUnsafeScope.h" />
     <ClInclude Include="MessengerSystem.h" />
+    <ClInclude Include="SnakeBitObject.h" />
     <ClInclude Include="SnakeBody.h" />
     <ClInclude Include="SnakeGame.h" />
     <ClInclude Include="SnakeHead.h" />

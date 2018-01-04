@@ -13,6 +13,6 @@ void SnakeGame::InitializeGame(sf::RenderWindow* _RenderWindow)
 {
 	Game::InitializeGame(_RenderWindow);
 
-	AttachToMessenger(GetMessenger("KeyEvents"));
-	AttachToMessenger(GetMessenger("GlobalEvents"));
+	AttachToMessenger(GetMessenger("KeyEvents").get());
+	AttachToMessenger(GetMessenger("GlobalEvents").get());
 }

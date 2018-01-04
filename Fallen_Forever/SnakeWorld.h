@@ -30,5 +30,7 @@ protected:
 
 	std::shared_ptr<GameObject> mWorldRoot;
 
+	std::shared_ptr<GameObject> mSnakeBit;
+
 	std::shared_ptr<ResourceHolder> mResourceHolder;
 };

@@ -9,8 +9,8 @@ World::World(Game* _Game)
 {
 	mGame = _Game;
 
-	AttachToMessenger(mGame->GetMessenger("KeyEvents"));
-	AttachToMessenger(mGame->GetMessenger("GameEvents"));
+	AttachToMessenger(mGame->GetMessenger("KeyEvents").get());
+	AttachToMessenger(mGame->GetMessenger("GameEvents").get());
 	mWorldRoot = std::make_shared<GameObject>();
 	Initialize();
 }

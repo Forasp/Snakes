@@ -5,12 +5,16 @@
 #include "Messenger.h"
 #include "Message.h"
 #include "SnakeHead.h"
+#include "SnakeBitObject.h"
 #include "GameThreadUnsafeScope.h"
 
 void SnakeWorld::Initialize()
 {
 	// Construct our world here.
 	mWorldRoot = std::make_shared<SnakeHead>(mGame);
+
+	mSnakeBit = std::make_shared<SnakeBitObject>(mGame);
+	mSnakeBit->SetPosition(std::pair<double, double>(200, 200));
 }
 
 SnakeWorld::~SnakeWorld()
