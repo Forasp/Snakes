@@ -1,4 +1,1 @@
-# Fallen_Forever
-2D Space Sim/RPG set in the Fallen IP
-
-See the wiki at https://github.com/Timpo88m/Fallen_Forever/wiki
+Branch of Fallen Forever, retooled for a snake game. I have no idea if it works in the current state.
